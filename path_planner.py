@@ -24,9 +24,6 @@ class Node:
         self.x = x
         self.y = y
 
-        # New xy attribute
-        self.xy = [self.x, self.y]
-
         # Neighbouring edges
         self.neighbours = []
         self.neighbour_costs = []
@@ -168,8 +165,6 @@ class Graph:
         self.marker_pub_ = rospy.Publisher('marker', Marker, queue_size=10)
         
         # Select between grid or PRM
-        
-
 
         use_prm = rospy.get_param("~use_prm")
         if use_prm:
@@ -239,21 +234,7 @@ class Graph:
         ## YOUR CODE GOES HERE ##
         #########################
 
-        self.nodes_ = []
-        for i in range(num_nodes):
-            # Generate a random point in the free space of the environment.
-            x = np.random.randint(0, self.map_.width_)
-            y = np.random.randint(0, self.map_.height_)
 
-            # Check if the point is in the free space.
-            if self.map_.is_free(x, y):
-                # Create a new node at the point.
-                node = Node(idx, x, y)
-                self.nodes_.append(node)
-                idx += 1
-
-        # Connect the nodes.
-        self.connect_nodes()
 
 
 
@@ -298,11 +279,12 @@ class Graph:
             ## YOUR CODE GOES HERE ##
             #########################
 
-            node = self.nodes_[i]
-            node_dist = np.linalg.norm(np.array(xy) - np.array(node.xy))
-            if node_dist < best_dist:
-                best_dist = node_dist
-                best_index = i 
+
+
+
+
+
+            pass # you can remove this line after you have filled in the above code
 
         return best_index
 
@@ -315,6 +297,8 @@ class Graph:
         #########################
         ## YOUR CODE GOES HERE ##
         #########################
+        return None # !!! Comment this out once you fill in this method
+
         # Setup GraphSearch object
         graph_search = GraphSearch(self)
 
@@ -324,21 +308,15 @@ class Graph:
         # Current group
         group_number = 1
 
-        # Iterate over all nodes
-        for i in range(len(self.nodes_)):
 
-            # If the node is not in a group yet
-            if groups[i] == 0:
+        # !!! Fill in this gap
 
-                # Find all nodes that are connected to the current node
-                connected_nodes = graph_search.find_connected_nodes(self.nodes_[i])
 
-                # Add all connected nodes to the current group
-                for node in connected_nodes:
-                    groups[node] = group_number
 
-                # Increment the group number
-                group_number += 1
+
+
+
+
 
         # Save it here so it will show up in the visualisation as different colours
         self.groups_ = groups
@@ -405,9 +383,6 @@ class Graph:
 
     def visualise_search(self, visited_set, unvisited_set, start_idx, goal_idx):
         # Visualise the nodes with these node indexes
-        if not visited_set:
-            return   
-        self.marker_visited_.header.stamp = rospy.Time.now()
         self.marker_visited_.points = []
         for i in visited_set:
             node_i = self.nodes_[i]
@@ -416,10 +391,6 @@ class Graph:
             self.marker_visited_.points.append(point)
         self.marker_pub_.publish(self.marker_visited_)
 
-        if not unvisited_set:
-            return
-
-        self.marker_visited_.header.stamp = rospy.Time.now()
         self.marker_unvisited_.points = []
         for i in unvisited_set:
             node_i = self.nodes_[i]
@@ -428,7 +399,6 @@ class Graph:
             self.marker_unvisited_.points.append(point)
         self.marker_pub_.publish(self.marker_unvisited_)
 
-        self.marker_start_.header.stamp = rospy.Time.now()
         self.marker_start_.points = []
         node_i = self.nodes_[start_idx]
         p = self.map_.pixel_to_world(node_i.x, node_i.y)
@@ -458,7 +428,6 @@ class Graph:
     def visualise_path_smooth(self, path):
         msg = Path()
         msg.header.frame_id = 'map'
-        msg.header.stamp = rospy.Time.now()
         for node in path:
             p = self.map_.pixel_to_world(node.x, node.y)
             pose = PoseStamped()
@@ -586,8 +555,6 @@ class GraphSearch:
 
 
 
-    
-        
     def search(self, start_idx, goal_idx):
         
         # Set all parents and costs to zero
@@ -606,14 +573,13 @@ class GraphSearch:
         # Loop until solution found or graph is disconnected
         while len(unvisited_set) > 0:
 
-
             # Select a node
             # hint: self.get_minimum_cost_node(unvisited_set) will help you find the node with the minimum cost
 
             #########################
             ## YOUR CODE GOES HERE ##
             #########################
-            node_idx = self.get_minimum_cost_node(unvisited_set)
+
             
 
 
@@ -625,10 +591,7 @@ class GraphSearch:
             #########################
             ## YOUR CODE GOES HERE ##
             #########################
-            if node_idx in unvisited_set:
-                unvisited_set.remove(node_idx)
-            visited_set.append(node_idx)
-                
+
             
 
 
@@ -644,9 +607,9 @@ class GraphSearch:
             ## YOUR CODE GOES HERE  ##
             ## FIX THE IF CONDITION ##
             ##########################
-            if node_idx == goal_idx:
-                rospy.loginfo("Goal found!")
-                return
+            # if ??:
+            #     rospy.loginfo("Goal found!")
+            #     return
 
             
 
@@ -663,8 +626,8 @@ class GraphSearch:
                 # Check if neighbours is already in visited
                 if neighbour.idx in visited_set:
                     
-                    
-                    continue
+                    # Do nothing
+                    pass
                 
                 else:
 
@@ -676,7 +639,7 @@ class GraphSearch:
                     ##########################
                     ## YOUR CODE GOES HERE  ##
                     ##########################
-                    neighbour_cost = self.graph_.nodes_[node_idx].cost + neighbour_cost + self.heuristic_weight_ * neighbour.distance_to(self.graph_.nodes_[goal_idx])
+
                     
 
 
@@ -687,7 +650,7 @@ class GraphSearch:
                     # Check if neighbours is already in unvisited
                     if neighbour.idx in unvisited_set:
 
-                        
+                        pass # you can remove this line after you've completed the following
 
                         # If the cost is lower than the previous cost for this node
                         # Then update it to the new cost
@@ -697,14 +660,9 @@ class GraphSearch:
                         ## YOUR CODE GOES HERE  ##
                         ## FIX THE ?? BELOW     ##
                         ##########################
-                        if neighbour.idx in unvisited_set:
-                            # If the cost is lower than the previous cost for this node
-                            # Then update it to the new cost
-                            # Also, update the parent pointer to point to the new parent
-                            if neighbour.cost > neighbour_cost:
-                                neighbour.parent_node = self.graph_.nodes_[node_idx]
-                                neighbour.cost = neighbour_cost
-                            
+                        # if ??:
+                        #     neighbour.parent_node = ??
+                        #     neighbour.cost = ??
 
                         
 
@@ -723,8 +681,8 @@ class GraphSearch:
                         ## YOUR CODE GOES HERE  ##
                         ## FIX THE ?? BELOW     ##
                         ##########################
-                        neighbour.parent_node = self.graph_.nodes_[node_idx]
-                        neighbour.cost = neighbour_cost
+                        # neighbour.parent_node = ??
+                        # neighbour.cost = ??
 
                         
 
@@ -734,7 +692,7 @@ class GraphSearch:
             # Visualise the current search status in RVIZ
             self.visualise_search(visited_set, unvisited_set, start_idx, goal_idx)
             # rospy.sleep(0.01)
-        return None               
+                   
 
     def get_minimum_cost_node(self, unvisited_set):
         # Find the vertex with the minimum cost
@@ -761,25 +719,17 @@ class GraphSearch:
         ## YOUR CODE GOES HERE ##
         #########################
 
-        # Follow the parents from the goal back to the start
-        while current.parent_node is not None:
-            current = current.parent_node
-            path.append(current)
+        
 
-        # Reverse the path
-        path.reverse()
 
+
+
+
+
+
+
+        
         return path
-
-
-
-
-
-
-
-
-        
-        
 
     def find_connected_nodes(self, start_idx):
         # Return a list of all nodes that are reachable from start_idx node
@@ -794,30 +744,23 @@ class GraphSearch:
         #########################
 
         
-        # Initialize the visited set
-        visited_set = set()
 
-        # Create a queue to store the nodes that need to be explored
-        queue = [start_idx]
 
-        # Iterate over the queue
-        while queue:
 
-            # Pop the node from the queue
-            node_idx = queue.pop(0)
 
-            # Add the node to the visited set
-            visited_set.add(node_idx)
 
-            # Find all the nodes that are connected to the current node
-            connected_nodes = self.get_connected_nodes(node_idx)
 
-            # Add all connected nodes to the queue
-            for connected_node in connected_nodes:
-                if connected_node not in visited_set:
-                    queue.append(connected_node)
 
-        return list(visited_set)
+
+
+
+
+
+
+
+
+
+        return visited_set
 
 
 
@@ -854,20 +797,7 @@ class PathSmoother():
         #########################
         ## YOUR CODE GOES HERE ##
         #########################
-        converged = False
-        while not converged:
-            converged = True
-            for i in range(1, len(path_smooth) - 1):
-                # Update the smooth path using the gradient descent equation.
-                new_point = (1 - alpha) * path_smooth[i] + alpha * (0.5 * (path_smooth[i - 1] + path_smooth[i + 1]) + beta * (path[i] - path_smooth[i]))
 
-                # Check if the new path intersects with any obstacles.
-                if self.is_occluded(path_smooth[i - 1], new_point) or self.is_occluded(new_point, path_smooth[i + 1]):
-                    # If it does, discard the update and revert to the previous path.
-                    converged = False
-                    break
-
-                path_smooth[i] = new_point
 
 
 
